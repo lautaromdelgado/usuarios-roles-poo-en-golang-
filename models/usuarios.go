@@ -17,7 +17,35 @@ func (u Usuario) MostrarInfo() {
 	u.Rol.MostrarPermisos()
 }
 
+/*
+	1️⃣ Un Cliente solo puede convertirse en Empleado, pero no en Administrador.
+	2️⃣ Un Empleado puede convertirse en Administrador o volver a ser Cliente.
+	3️⃣ Un Administrador puede cambiar a cualquier otro rol.
+*/
+
+// CambiarRol es un método que cambia el rol de un usuario
 func (u *Usuario) CambiarRol(nuevoRol Rol) {
-	u.Rol = nuevoRol
-	fmt.Printf("El rol ha sido cambiado a: %s\n", u.Rol.ObtenerNombre())
+	rolActual := u.Rol.ObtenerNombre()         // Obtener el nombre del rol actual
+	nuevoRolNombre := nuevoRol.ObtenerNombre() // Obtener el nombre del nuevo rol
+
+	// Verificar si el usuario ya tiene el nuevo rol
+	if rolActual == nuevoRolNombre {
+		fmt.Printf("El usuario ya es %s\n", rolActual)
+		return
+	}
+
+	// Verificar si el usuario es cliente y el nuevo rol es administrador
+	if rolActual == "Cliente" && nuevoRolNombre == "Administrador" {
+		fmt.Println("❌ error: un cliente no puede convertirse en administrador")
+		return
+	}
+
+	// Verificar si el usuario es empleado y el nuevo rol es cliente o administrador
+	if rolActual == "Empleado" && nuevoRolNombre == "Cliente" {
+		fmt.Printf("❌ error: un empleado no puede convertirse en %s\n", nuevoRolNombre)
+		return
+	}
+
+	fmt.Printf("El rol ha sido cambiado de: %s a %s\n", rolActual, nuevoRolNombre) // Mostrar mensaje de éxito
+	u.Rol = nuevoRol                                                               // Cambiar el rol del usuario
 }
