@@ -6,66 +6,78 @@ import (
 	"os"
 )
 
-// SistemasUsuarios es una estructura que representa
-// a un conjunto de usuarios
-type SistemasUsuarios struct {
+// SistemaUsuarios es una estructura que maneja la lista de usuarios
+type SistemaUsuarios struct {
 	Usuarios []Usuario
 }
 
-// AgregarUsuario es un método que agrega un usuario al sistema
-func (s *SistemasUsuarios) AgregarUsuario(u Usuario) {
-	s.Usuarios = append(s.Usuarios, u)             // Agregamos el usuario al sistema
-	fmt.Printf("✅ Usuario agregado: %s", u.Nombre) // Mostramos un mensaje de éxito
+// AgregarUsuario agrega un usuario a la lista
+func (s *SistemaUsuarios) AgregarUsuario(usuario Usuario) {
+	s.Usuarios = append(s.Usuarios, usuario)
+	fmt.Println("✅ Usuario agregado:", usuario.Nombre)
 }
 
-// BuscarUsuarioNombre es un método que busca un usuario por su nombre
-func (s *SistemasUsuarios) BuscarUsuarioNombre(n string) *Usuario {
-	for i, u := range s.Usuarios { // Recorremos los usuarios
-		if u.Nombre == n { // Si el nombre del usuario es igual al nombre buscado
-			return &s.Usuarios[i] // Retornamos el usuario encontrado
+// BuscarUsuarioPorNombre busca un usuario en la lista
+func (s *SistemaUsuarios) BuscarUsuarioPorNombre(nombre string) *Usuario {
+	for i := range s.Usuarios {
+		if s.Usuarios[i].Nombre == nombre {
+			return &s.Usuarios[i] // Retorna un puntero al usuario
 		}
 	}
-	return nil // Si no se encontró el usuario, retornamos nil
+	return nil
 }
 
-// EliminarUsuario es un método que elimina un usuario del sistema
-func (s *SistemasUsuarios) EliminarUsuario(n string) {
-	for i, u := range s.Usuarios {
-		if u.Nombre == n {
-			s.Usuarios = append(s.Usuarios[:i], s.Usuarios[i+1:]...) // Eliminamos el usuario del slice
-			fmt.Printf("🗑️ Usuario eliminado: %s", u.Nombre)
+// EliminarUsuario elimina un usuario de la lista por su nombre
+func (s *SistemaUsuarios) EliminarUsuario(nombre string) {
+	for i, usuario := range s.Usuarios {
+		if usuario.Nombre == nombre {
+			s.Usuarios = append(s.Usuarios[:i], s.Usuarios[i+1:]...) // Remueve el usuario
+			fmt.Println("🗑️ Usuario eliminado:", nombre)
 			return
 		}
 	}
-	fmt.Println("❌ Usuario no encontrado")
+	fmt.Println("❌ Usuario no encontrado:", nombre)
 }
 
-// MostrarUsuarios es un método que muestra la información de los usuarios
-func (s *SistemasUsuarios) MostrarUsuarios() {
-	if len(s.Usuarios) > 0 { // Si hay usuarios registrados
-		fmt.Println("📭 Usuarios registrados:")
-		for _, u := range s.Usuarios { // Recorremos los usuarios
-			u.MostrarInfo() // Mostramos la información del usuario
-			fmt.Println("-----------------------")
-		}
+// MostrarUsuarios imprime todos los usuarios de la lista
+func (s *SistemaUsuarios) MostrarUsuarios() {
+	if len(s.Usuarios) == 0 {
+		fmt.Println("📭 No hay usuarios en el sistema.")
 		return
 	}
-	fmt.Println("📭 No hay usuarios registrados.") // Si no hay usuarios registrados
+	fmt.Println("📋 Lista de Usuarios:")
+	for _, usuario := range s.Usuarios {
+		usuario.MostrarInfo()
+		fmt.Println("-----------------------")
+	}
 }
 
-// GuardarEnArchivos es un método que guarda los usuarios en un archivo
-func (s *SistemasUsuarios) GuardarEnArchivos(nombreArchivo string) {
-	// Convertimos los usuarios en JSON
-	data, err := json.MarshalIndent(s.Usuarios, "", " ")
-	if err != nil { // Si hay un error al convertir los usuarios
-		fmt.Printf("❌ Error al convertir los usuarios en JSON: %s\n", err)
+// GuardarEnArchivo guarda los usuarios en un archivo JSON
+func (s *SistemaUsuarios) GuardarEnArchivo(nombreArchivo string) {
+	data, err := json.MarshalIndent(s.Usuarios, "", "  ")
+	if err != nil {
+		fmt.Println("❌ Error al serializar usuarios:", err)
 		return
 	}
-	// Guardamos los usuarios en un archivo
 	err = os.WriteFile(nombreArchivo, data, 0644)
-	if err != nil { // Si hay un error al guardar los usuarios
-		fmt.Printf("❌ Error al guardar los usuarios en el archivo: %s\n", err)
+	if err != nil {
+		fmt.Println("❌ Error al guardar archivo:", err)
 		return
 	}
-	fmt.Printf("✅ Usuarios guardados en el archivo %s\n", nombreArchivo)
+	fmt.Println("✅ Usuarios guardados en", nombreArchivo)
+}
+
+// CargarDesdeArchivo carga los usuarios desde un archivo JSON
+func (s *SistemaUsuarios) CargarDesdeArchivo(nombreArchivo string) {
+	data, err := os.ReadFile(nombreArchivo)
+	if err != nil {
+		fmt.Println("⚠️ No se pudo leer el archivo, iniciando con lista vacía.")
+		return
+	}
+	err = json.Unmarshal(data, &s.Usuarios)
+	if err != nil {
+		fmt.Println("❌ Error al deserializar usuarios:", err)
+	} else {
+		fmt.Println("✅ Usuarios cargados desde", nombreArchivo)
+	}
 }

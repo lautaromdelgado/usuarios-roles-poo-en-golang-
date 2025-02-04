@@ -1,27 +1,65 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
 // Usuarios es una estructura que representa a los usuarios
 type Usuario struct {
-	Nombre string
-	Email  string
-	Rol    Rol
+	Nombre string `json:"Nombre"` // Nombre del usuario
+	Email  string `json:"Email"`  // Correo electrónico del usuario
+	Rol    Rol    `json:"Rol"`    // Rol del usuario
 }
 
 // MostrarInfo es un método que muestra la información de un usuario
 func (u Usuario) MostrarInfo() {
-	fmt.Printf("Nombre: %s\nCorreo: %s\nRol: %s\n", u.Nombre, u.Email, u.Rol.ObtenerNombre())
-	u.Rol.MostrarPermisos()
+	fmt.Printf("👤 Nombre: %s\n📧 Correo: %s\n", u.Nombre, u.Email)
+	if u.Rol != nil {
+		fmt.Printf("🔑 Rol: %s\n", u.Rol.ObtenerNombre())
+	} else {
+		fmt.Println("🔑 Rol: Sin rol asignado")
+	}
 }
 
-/*
-	1️⃣ Un Cliente solo puede convertirse en Empleado, pero no en Administrador.
-	2️⃣ Un Empleado puede convertirse en Administrador o volver a ser Cliente.
-	3️⃣ Un Administrador puede cambiar a cualquier otro rol.
-*/
+// usuarioAux es una estructura auxiliar para el método CambiarRol
+type usuarioAux struct {
+	Nombre string          `json:"Nombre"` // Nombre del usuario
+	Email  string          `json:"Email"`  // Apellido del usuario
+	Rol    json.RawMessage `json:"Rol"`    // Rol del usuario
+}
+
+func (u *Usuario) UnmarshalJson(data []byte) error {
+	var aux usuarioAux
+	err := json.Unmarshal(data, &aux)
+	if err != nil {
+		return fmt.Errorf("❌ error al deserializar el usuario: %v", err)
+	}
+
+	u.Nombre = aux.Nombre
+	u.Email = aux.Email
+
+	type rolTipo struct {
+		Tipo string `json:"Tipo"`
+	}
+
+	var rt rolTipo
+	if err := json.Unmarshal(aux.Rol, &rt); err != nil {
+		return fmt.Errorf("❌ Error al deserializar el rol: %v", err)
+	}
+
+	switch rt.Tipo {
+	case "Admin":
+		u.Rol = Admin{}
+	case "Cliente":
+		u.Rol = Cliente{}
+	case "Empleado":
+		u.Rol = Empleado{}
+	default:
+		u.Rol = nil
+	}
+	return nil
+}
 
 // CambiarRol es un método que cambia el rol de un usuario
 func (u *Usuario) CambiarRol(nuevoRol Rol) {

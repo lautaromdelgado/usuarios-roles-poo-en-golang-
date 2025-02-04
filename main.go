@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"usuarios-roles/models"
+)
+
 // TESTEOS CON PRUEBAS DE EJEMPLO
 // SETEANDO ROLES Y CAMBIANDO LOS ROLES DE LOS USUARIOS
 
@@ -133,3 +138,32 @@ Rol: Administrador
 Permisos: Puede crear, editar y eliminar usuarios.
 
 */
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+func main() {
+	sistema := models.SistemaUsuarios{}
+	archivoUsuarios := "usuarios.json"
+
+	// Cargamos usuarios desde el archivo
+	sistema.CargarDesdeArchivo(archivoUsuarios)
+
+	fmt.Println("-----------------------")
+
+	// Si no hay usuarios, agregamos algunos por defecto
+	if len(sistema.Usuarios) == 0 {
+		sistema.AgregarUsuario(models.Usuario{Nombre: "Lautaro", Email: "lautaro@example.com", Rol: models.Admin{}})
+		sistema.AgregarUsuario(models.Usuario{Nombre: "Carlos", Email: "carlos@example.com", Rol: models.Cliente{}})
+		sistema.AgregarUsuario(models.Usuario{Nombre: "María", Email: "maria@example.com", Rol: models.Empleado{}})
+	}
+
+	fmt.Println("-----------------------")
+
+	// Mostramos los usuarios actuales
+	sistema.MostrarUsuarios()
+
+	fmt.Println("-----------------------")
+
+	// Guardamos los usuarios antes de salir
+	sistema.GuardarEnArchivo(archivoUsuarios)
+}
